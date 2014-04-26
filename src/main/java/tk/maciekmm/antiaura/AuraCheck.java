@@ -28,6 +28,7 @@ import org.bukkit.util.Vector;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 
 public class AuraCheck {
@@ -99,6 +100,7 @@ public class AuraCheck {
         WrapperPlayServerNamedEntitySpawn wrapper = new WrapperPlayServerNamedEntitySpawn();
         wrapper.setEntityID(AntiAura.RANDOM.nextInt(20000));
         wrapper.setPosition(loc);
+        wrapper.setPlayerUUID(UUID.randomUUID().toString());
         wrapper.setPlayerName("katest");
         wrapper.setYaw(0);
         wrapper.setPitch(-45);
