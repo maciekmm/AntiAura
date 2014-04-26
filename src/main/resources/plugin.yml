@@ -1,0 +1,13 @@
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
+author: maciekmm
+website: ${project.url}
+main: ${main.class}
+depend: [ProtocolLib]
+commands:
+  auracheck:
+    description: Check if player has aura hack
+    usage: /<command> <nickname> - checks for aura hack
+    aliases: [ac]
+    permission: auracheck.check
