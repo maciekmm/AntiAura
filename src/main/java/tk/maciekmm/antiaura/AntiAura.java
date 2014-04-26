@@ -44,6 +44,7 @@ public class AntiAura extends JavaPlugin implements Listener {
     public static final Random RANDOM = new Random();
 
     public void onEnable() {
+        this.saveDefaultConfig();
         this.getServer().getPluginManager().registerEvents(this, this);
     }
 

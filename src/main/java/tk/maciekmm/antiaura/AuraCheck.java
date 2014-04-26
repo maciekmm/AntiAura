@@ -18,13 +18,16 @@
 package tk.maciekmm.antiaura;
 
 import com.comphenix.packetwrapper.WrapperPlayServerEntityDestroy;
+import com.comphenix.packetwrapper.WrapperPlayServerEntityEffect;
 import com.comphenix.packetwrapper.WrapperPlayServerNamedEntitySpawn;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +39,7 @@ public class AuraCheck {
     private HashMap<Integer, Boolean> entitiesSpawned = new HashMap<>();
     private CommandSender invoker;
     private Player checked;
-    private static Vector[] vectors = {new Vector(0,0,1.5),new Vector(-1.5,0,0),new Vector(1.5,0,0),new Vector(0,0,-1.5)};
+    private static Vector[] vectors = {new Vector(0, 0, 1.5), new Vector(-1.5, 0, 0), new Vector(1.5, 0, 0), new Vector(0, 0, -1.5), new Vector(1.5, 0, 1.5), new Vector(-1.5, 0, -1.5),};
     private long started;
     private long finished = Long.MAX_VALUE;
 
@@ -49,11 +52,12 @@ public class AuraCheck {
     public void invoke(CommandSender player) {
         this.invoker = player;
         this.started = System.currentTimeMillis();
-        for(int i = 0; i<4;i++) {
-            WrapperPlayServerNamedEntitySpawn wrapper = getWrapper(this.checked.getLocation().add(vectors[i]).toVector());
+        for (int i = 0; i < Math.min(vectors.length, plugin.getConfig().getInt("amountOfFakePlayers", 4)); i++) {
+            WrapperPlayServerNamedEntitySpawn wrapper = getWrapper(this.checked.getLocation().add(vectors[i]).toVector(),plugin);
             entitiesSpawned.put(wrapper.getEntityID(), false);
             wrapper.sendPacket(this.checked);
         }
+
         Bukkit.getScheduler().runTaskLater(this.plugin, new Runnable() {
             @Override
             public void run() {
@@ -62,11 +66,11 @@ public class AuraCheck {
                 if (invoker instanceof Player && !((Player) invoker).isOnline()) {
                     return;
                 }
-                invoker.sendMessage(ChatColor.DARK_PURPLE+"Aura check result: killed " + result.getKey() + " out of " + result.getValue());
-                double timeTaken = finished != Long.MAX_VALUE ? (int) ((finished - started) / 1000) : 0.5;
-                invoker.sendMessage(ChatColor.DARK_PURPLE+"Check length: " + timeTaken+" seconds.");
+                invoker.sendMessage(ChatColor.DARK_PURPLE + "Aura check result: killed " + result.getKey() + " out of " + result.getValue());
+                double timeTaken = finished != Long.MAX_VALUE ? (int) ((finished - started) / 1000) : ((double)plugin.getConfig().getInt("ticksToKill",10)/20);
+                invoker.sendMessage(ChatColor.DARK_PURPLE + "Check length: " + timeTaken + " seconds.");
             }
-        }, 10);
+        }, plugin.getConfig().getInt("ticksToKill",10));
     }
 
     public void markAsKilled(Integer val) {
@@ -85,7 +89,7 @@ public class AuraCheck {
         for (Map.Entry<Integer, Boolean> entry : entitiesSpawned.entrySet()) {
             if (entry.getValue()) {
                 killed++;
-            } else if(checked.isOnline()) {
+            } else if (checked.isOnline()) {
                 kill(entry.getKey()).sendPacket(checked);
             }
 
@@ -96,7 +100,7 @@ public class AuraCheck {
 
     }
 
-    public static WrapperPlayServerNamedEntitySpawn getWrapper(Vector loc) {
+    public static WrapperPlayServerNamedEntitySpawn getWrapper(Vector loc, AntiAura plugin) {
         WrapperPlayServerNamedEntitySpawn wrapper = new WrapperPlayServerNamedEntitySpawn();
         wrapper.setEntityID(AntiAura.RANDOM.nextInt(20000));
         wrapper.setPosition(loc);
@@ -105,7 +109,9 @@ public class AuraCheck {
         wrapper.setYaw(0);
         wrapper.setPitch(-45);
         WrappedDataWatcher watcher = new WrappedDataWatcher();
-        watcher.setObject(0, (byte) 0);
+        watcher.setObject(0, plugin.getConfig().getBoolean("invisibility", true) ? (Byte) (byte) 0x20 : (byte) 0);
+        watcher.setObject(6, (Float)(float) 0.5);
+        watcher.setObject(11, (Byte)(byte) 1);
         wrapper.setMetadata(watcher);
         return wrapper;
     }
