@@ -52,7 +52,7 @@ public class AuraCheck {
     public void invoke(CommandSender player,final Callback callback) {
         this.invoker = player;
         this.started = System.currentTimeMillis();
-        
+
         for (int i = 0; i < Math.min(vectors.length, plugin.getConfig().getInt("amountOfFakePlayers", 4)); i++) {
             WrapperPlayServerNamedEntitySpawn wrapper = getWrapper(this.checked.getLocation().add(vectors[i]).toVector(), plugin);
             entitiesSpawned.put(wrapper.getEntityID(), false);

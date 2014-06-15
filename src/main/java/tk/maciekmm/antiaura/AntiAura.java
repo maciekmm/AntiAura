@@ -35,13 +35,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 public class AntiAura extends JavaPlugin implements Listener {
     private HashMap<UUID, AuraCheck> running = new HashMap<>();
+    private static List<Vector> positions = new ArrayList<>();
     private boolean isRegistered;
     public static final Random RANDOM = new Random();
 
@@ -72,27 +70,36 @@ public class AntiAura extends JavaPlugin implements Listener {
         this.isRegistered = false;
     }
 
-    public void remove(UUID id) {
-        this.running.remove(id);
-        if (running.size() == 0) {
-            this.unregister();
+    public AuraCheck remove(UUID id) {
+        if (this.running.containsKey(id)) {
+
+            if (running.size() == 1) {
+                this.unregister();
+            }
+
+            return this.running.remove(id);
         }
+        return null;
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
             return false;
         }
+        
         Player player = Bukkit.getPlayer(args[0]);
         if (player == null) {
             sender.sendMessage("Player is not online.");
             return true;
         }
+
         if (!isRegistered) {
             this.register();
         }
+
         AuraCheck check = new AuraCheck(this, player);
         running.put(player.getUniqueId(), check);
+
         check.invoke(sender, new AuraCheck.Callback() {
             @Override
             public void done(long started, long finished, AbstractMap.SimpleEntry<Integer, Integer> result, CommandSender invoker) {
@@ -109,8 +116,9 @@ public class AntiAura extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onDisconnect(PlayerQuitEvent event) {
-        if (running.containsKey(event.getPlayer().getUniqueId())) {
-            running.remove(event.getPlayer().getUniqueId()).end();
-        }
+       AuraCheck check = this.remove(event.getPlayer().getUniqueId());
+       if(check != null) {
+           check.end();
+       }
     }
 }
