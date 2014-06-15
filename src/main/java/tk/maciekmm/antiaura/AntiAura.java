@@ -26,6 +26,7 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -34,6 +35,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
@@ -55,7 +57,7 @@ public class AntiAura extends JavaPlugin implements Listener {
                     public void onPacketReceiving(PacketEvent event) {
                         if (event.getPacketType() == WrapperPlayClientUseEntity.TYPE) {
                             int entID = new WrapperPlayClientUseEntity(event.getPacket()).getTargetID();
-                            if(running.containsKey(event.getPlayer().getUniqueId())) {
+                            if (running.containsKey(event.getPlayer().getUniqueId())) {
                                 running.get(event.getPlayer().getUniqueId()).markAsKilled(entID);
                             }
                         }
@@ -72,26 +74,36 @@ public class AntiAura extends JavaPlugin implements Listener {
 
     public void remove(UUID id) {
         this.running.remove(id);
-        if(running.size()==0) {
+        if (running.size() == 0) {
             this.unregister();
         }
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if(args.length<1) {
+        if (args.length < 1) {
             return false;
         }
         Player player = Bukkit.getPlayer(args[0]);
-        if(player==null) {
+        if (player == null) {
             sender.sendMessage("Player is not online.");
             return true;
         }
-        if(!isRegistered) {
+        if (!isRegistered) {
             this.register();
         }
-        AuraCheck check = new AuraCheck(this,player);
+        AuraCheck check = new AuraCheck(this, player);
         running.put(player.getUniqueId(), check);
-        check.invoke(sender);
+        check.invoke(sender, new AuraCheck.Callback() {
+            @Override
+            public void done(long started, long finished, AbstractMap.SimpleEntry<Integer, Integer> result, CommandSender invoker) {
+                if (invoker instanceof Player && !((Player) invoker).isOnline()) {
+                    return;
+                }
+                invoker.sendMessage(ChatColor.DARK_PURPLE + "Aura check result: killed " + result.getKey() + " out of " + result.getValue());
+                double timeTaken = finished != Long.MAX_VALUE ? (int) ((finished - started) / 1000) : ((double) getConfig().getInt("ticksToKill", 10) / 20);
+                invoker.sendMessage(ChatColor.DARK_PURPLE + "Check length: " + timeTaken + " seconds.");
+            }
+        });
         return true;
     }
 

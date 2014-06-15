@@ -49,11 +49,12 @@ public class AuraCheck {
         this.checked = checked;
     }
 
-    public void invoke(CommandSender player) {
+    public void invoke(CommandSender player,final Callback callback) {
         this.invoker = player;
         this.started = System.currentTimeMillis();
+        
         for (int i = 0; i < Math.min(vectors.length, plugin.getConfig().getInt("amountOfFakePlayers", 4)); i++) {
-            WrapperPlayServerNamedEntitySpawn wrapper = getWrapper(this.checked.getLocation().add(vectors[i]).toVector(),plugin);
+            WrapperPlayServerNamedEntitySpawn wrapper = getWrapper(this.checked.getLocation().add(vectors[i]).toVector(), plugin);
             entitiesSpawned.put(wrapper.getEntityID(), false);
             wrapper.sendPacket(this.checked);
         }
@@ -63,12 +64,7 @@ public class AuraCheck {
             public void run() {
                 AbstractMap.SimpleEntry<Integer, Integer> result = end();
                 plugin.remove(checked.getUniqueId());
-                if (invoker instanceof Player && !((Player) invoker).isOnline()) {
-                    return;
-                }
-                invoker.sendMessage(ChatColor.DARK_PURPLE + "Aura check result: killed " + result.getKey() + " out of " + result.getValue());
-                double timeTaken = finished != Long.MAX_VALUE ? (int) ((finished - started) / 1000) : ((double)plugin.getConfig().getInt("ticksToKill",10)/20);
-                invoker.sendMessage(ChatColor.DARK_PURPLE + "Check length: " + timeTaken + " seconds.");
+                callback.done(started,finished,result,invoker);
             }
         }, plugin.getConfig().getInt("ticksToKill",10));
     }
@@ -78,10 +74,10 @@ public class AuraCheck {
             entitiesSpawned.put(val, true);
             kill(val).sendPacket(checked);
         }
+
         if (!entitiesSpawned.containsValue(false)) {
             this.finished = System.currentTimeMillis();
         }
-
     }
 
     public AbstractMap.SimpleEntry<Integer, Integer> end() {
@@ -105,13 +101,13 @@ public class AuraCheck {
         wrapper.setEntityID(AntiAura.RANDOM.nextInt(20000));
         wrapper.setPosition(loc);
         wrapper.setPlayerUUID(UUID.randomUUID().toString());
-        wrapper.setPlayerName("katest");
+        wrapper.setPlayerName(String.valueOf(AntiAura.RANDOM.nextInt()));
         wrapper.setYaw(0);
         wrapper.setPitch(-45);
         WrappedDataWatcher watcher = new WrappedDataWatcher();
-        watcher.setObject(0, plugin.getConfig().getBoolean("invisibility", true) ? (Byte) (byte) 0x20 : (byte) 0);
-        watcher.setObject(6, (Float)(float) 0.5);
-        watcher.setObject(11, (Byte)(byte) 1);
+        watcher.setObject(0, plugin.getConfig().getBoolean("invisibility", false) ? (Byte) (byte) 0x20 : (byte) 0);
+        watcher.setObject(6, (Float) (float) 0.5);
+        watcher.setObject(11, (Byte) (byte) 1);
         wrapper.setMetadata(watcher);
         return wrapper;
     }
@@ -121,4 +117,9 @@ public class AuraCheck {
         wrapper.setEntities(new int[]{entity});
         return wrapper;
     }
+
+    public interface Callback {
+        public void done(long started, long finished, AbstractMap.SimpleEntry<Integer, Integer> result, CommandSender invoker);
+    }
+
 }
