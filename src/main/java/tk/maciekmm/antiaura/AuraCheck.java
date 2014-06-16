@@ -18,14 +18,11 @@
 package tk.maciekmm.antiaura;
 
 import com.comphenix.packetwrapper.WrapperPlayServerEntityDestroy;
-import com.comphenix.packetwrapper.WrapperPlayServerEntityEffect;
 import com.comphenix.packetwrapper.WrapperPlayServerNamedEntitySpawn;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import java.util.AbstractMap;
@@ -35,11 +32,17 @@ import java.util.UUID;
 
 
 public class AuraCheck {
+                                                /*
+                                                  -x,y | x,y
+                                                 ------|------
+                                                  -x,-y| x,-y
+                                                 */
+    public static final short[][] MULTIPLIERS = {{1,1},{-1,1},{-1,-1},{1,-1}};
+
     private final AntiAura plugin;
     private HashMap<Integer, Boolean> entitiesSpawned = new HashMap<>();
     private CommandSender invoker;
     private Player checked;
-    private static Vector[] vectors = {new Vector(0, 0, 1.5), new Vector(-1.5, 0, 0), new Vector(1.5, 0, 0), new Vector(0, 0, -1.5), new Vector(1.5, 0, 1.5), new Vector(-1.5, 0, -1.5),};
     private long started;
     private long finished = Long.MAX_VALUE;
 
@@ -53,10 +56,12 @@ public class AuraCheck {
         this.invoker = player;
         this.started = System.currentTimeMillis();
 
-        for (int i = 0; i < Math.min(vectors.length, plugin.getConfig().getInt("amountOfFakePlayers", 4)); i++) {
-            WrapperPlayServerNamedEntitySpawn wrapper = getWrapper(this.checked.getLocation().add(vectors[i]).toVector(), plugin);
-            entitiesSpawned.put(wrapper.getEntityID(), false);
-            wrapper.sendPacket(this.checked);
+        for (int i = 0; i <= 4; i++) {
+            for(Vector vec : AntiAura.POSITIONS) {
+                WrapperPlayServerNamedEntitySpawn wrapper = getWrapper(this.checked.getLocation().add(MULTIPLIERS[0][1]*vec.getX(),0,MULTIPLIERS[i][1]*vec.getZ()).toVector(), plugin);
+                entitiesSpawned.put(wrapper.getEntityID(), false);
+                wrapper.sendPacket(this.checked);
+            }
         }
 
         Bukkit.getScheduler().runTaskLater(this.plugin, new Runnable() {
