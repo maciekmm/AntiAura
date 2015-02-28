@@ -22,18 +22,16 @@ import com.comphenix.packetwrapper.WrapperPlayClientUseEntity;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
-import com.google.common.collect.ImmutableList;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -43,28 +41,12 @@ import java.util.UUID;
 
 public class AntiAura extends JavaPlugin implements Listener {
     private HashMap<UUID, AuraCheck> running = new HashMap<>();
-    public static ImmutableList<Vector> POSITIONS;
     private boolean isRegistered;
     public static final Random RANDOM = new Random();
 
     public void onEnable() {
         this.saveDefaultConfig();
-        POSITIONS = getPositionsForAmount(this.getConfig().getInt("amountOfFakePlayers"));
         this.getServer().getPluginManager().registerEvents(this, this);
-    }
-
-    public ImmutableList<Vector> getPositionsForAmount(int total) {
-        ImmutableList.Builder<Vector> pos_temp = new ImmutableList.Builder<>();
-        double per90deg = total / 4;
-        double result = per90deg / (per90deg + 1);
-        double currentX = 0;
-        double currentY = 1;
-        for (int i = 0; i <= per90deg; i++) {
-            currentX += result;
-            currentY -= result;
-            pos_temp.add(new Vector(currentX,(double)0,currentY));
-        }
-        return pos_temp.build();
     }
 
     public void register() {
@@ -73,7 +55,7 @@ public class AntiAura extends JavaPlugin implements Listener {
                     @Override
                     public void onPacketReceiving(PacketEvent event) {
                         if (event.getPacketType() == WrapperPlayClientUseEntity.TYPE) {
-                            int entID = new WrapperPlayClientUseEntity(event.getPacket()).getTargetID();
+                            int entID = new WrapperPlayClientUseEntity(event.getPacket()).getTarget();
                             if (running.containsKey(event.getPlayer().getUniqueId())) {
                                 running.get(event.getPlayer().getUniqueId()).markAsKilled(entID);
                             }
@@ -105,10 +87,20 @@ public class AntiAura extends JavaPlugin implements Listener {
         if (args.length < 1) {
             return false;
         }
+        if(args[0].equalsIgnoreCase("reload")) {
+        	this.reloadConfig();
+        	sender.sendMessage(ChatColor.GREEN + "AntiAura config successfully reloaded");
+        	return true;
+        }
 
-        Player player = Bukkit.getPlayer(args[0]);
+        Player player = null;
+        for(Player online : Bukkit.getOnlinePlayers()) {
+        	if(online.getName().equalsIgnoreCase(args[0])) {
+        		player = online;
+        	}
+        }
         if (player == null) {
-            sender.sendMessage("Player is not online.");
+            sender.sendMessage(ChatColor.RED + "Player is not online.");
             return true;
         }
 
