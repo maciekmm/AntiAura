@@ -60,19 +60,19 @@ public class AuraCheck {
         
         int numPlayers = plugin.getConfig().getInt("amountOfFakePlayers");
         for (int i = 0; i <= numPlayers ; i++) {
-        	int degrees = 360 / numPlayers * i;
-        	double radians = Math.toRadians(degrees);
-        	WrapperPlayServerNamedEntitySpawn spawnWrapper;
-        	if(i == 0) {
-        		spawnWrapper = getSpawnWrapper(this.checked.getLocation().add(0, 2, 0).toVector(), plugin);
-        	} else {
-        		spawnWrapper = getSpawnWrapper(this.checked.getLocation().add(2 * Math.cos(radians) ,0.2, 2 * Math.sin(radians)).toVector(), plugin);
-        	}
-        	WrapperPlayServerPlayerInfo infoWrapper = getInfoWrapper(spawnWrapper.getPlayerUuid(), PlayerInfoAction.ADD_PLAYER); 
-        	infoWrapper.sendPacket(this.checked);
-        	spawnWrapper.sendPacket(this.checked);
-        	entitiesSpawned.put(spawnWrapper.getEntityId(), false);
-        	WrapperPlayServerPlayerInfo RemoveinfoWrapper = getInfoWrapper(spawnWrapper.getPlayerUuid(), PlayerInfoAction.REMOVE_PLAYER);
+            int degrees = 360 / numPlayers * i;
+            double radians = Math.toRadians(degrees);
+            WrapperPlayServerNamedEntitySpawn spawnWrapper;
+            if(i == 0) {
+                spawnWrapper = getSpawnWrapper(this.checked.getLocation().add(0, 2, 0).toVector(), plugin);
+            } else {
+                spawnWrapper = getSpawnWrapper(this.checked.getLocation().add(2 * Math.cos(radians) ,0.2, 2 * Math.sin(radians)).toVector(), plugin);
+            }
+            WrapperPlayServerPlayerInfo infoWrapper = getInfoWrapper(spawnWrapper.getPlayerUuid(), PlayerInfoAction.ADD_PLAYER); 
+            infoWrapper.sendPacket(this.checked);
+            spawnWrapper.sendPacket(this.checked);
+            entitiesSpawned.put(spawnWrapper.getEntityId(), false);
+            WrapperPlayServerPlayerInfo RemoveinfoWrapper = getInfoWrapper(spawnWrapper.getPlayerUuid(), PlayerInfoAction.REMOVE_PLAYER);
             RemoveinfoWrapper.sendPacket(this.checked);
         }
         

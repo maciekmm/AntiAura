@@ -19,9 +19,12 @@
 package tk.maciekmm.antiaura;
 
 import com.comphenix.packetwrapper.WrapperPlayClientUseEntity;
+import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -33,8 +36,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -88,16 +93,35 @@ public class AntiAura extends JavaPlugin implements Listener {
             return false;
         }
         if(args[0].equalsIgnoreCase("reload")) {
-        	this.reloadConfig();
-        	sender.sendMessage(ChatColor.GREEN + "AntiAura config successfully reloaded");
-        	return true;
+            this.reloadConfig();
+            sender.sendMessage(ChatColor.GREEN + "AntiAura config successfully reloaded");
+            return true;
         }
 
+        @SuppressWarnings("deprecation")
+        List<Player> playerList = Bukkit.matchPlayer(args[0]);
         Player player = null;
-        for(Player online : Bukkit.getOnlinePlayers()) {
-        	if(online.getName().equalsIgnoreCase(args[0])) {
-        		player = online;
-        	}
+        if(playerList.size() == 0) {
+            sender.sendMessage(ChatColor.RED + "Player is not online.");
+            return true;
+        } else if(playerList.size() == 1) {
+            player = playerList.get(0);
+        } else {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("[\"\",{\"text\":\"What player do you mean? (click one)\\n\",\"color\":\"green\"},");
+            for(Player p : playerList) {
+                stringBuilder.append("{\"text\":\"" + p.getName() + ", \",\"color\":\"blue\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/auracheck " + p.getName() + "\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"" + p.getName() + "\",\"color\":\"dark_purple\"}]}}},");
+            }
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            stringBuilder.append("]");
+            String json = stringBuilder.toString();
+            PacketContainer packet = new PacketContainer(PacketType.Play.Server.CHAT);
+            packet.getChatComponents().write(0, WrappedChatComponent.fromJson(json));
+            try {
+                ProtocolLibrary.getProtocolManager().sendServerPacket((Player)sender, packet);
+            } catch (InvocationTargetException e) {
+            }
+            return true;
         }
         if (player == null) {
             sender.sendMessage(ChatColor.RED + "Player is not online.");
