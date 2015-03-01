@@ -7,9 +7,9 @@ import java.util.Random;
 
 public class NameGenerator {
     private static final List<Alphabet> letters = Collections.unmodifiableList(Arrays.asList(Alphabet.values()));
+    private static Random rand = new Random();
 
     public static String newName() {
-        Random rand = new Random();
         int size = 3 + rand.nextInt(4);
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -23,7 +23,6 @@ public class NameGenerator {
     }
 
     private static String getRandomLetter() {
-        Random rand = new Random();
         return ((Alphabet) letters.get(rand.nextInt(letters.size()))).name();
     }
 

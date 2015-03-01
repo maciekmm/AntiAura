@@ -24,6 +24,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.wrappers.EnumWrappers.EntityUseAction;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 
 import org.bukkit.Bukkit;
@@ -60,8 +61,9 @@ public class AntiAura extends JavaPlugin implements Listener {
                     @Override
                     public void onPacketReceiving(PacketEvent event) {
                         if (event.getPacketType() == WrapperPlayClientUseEntity.TYPE) {
-                            int entID = new WrapperPlayClientUseEntity(event.getPacket()).getTarget();
-                            if (running.containsKey(event.getPlayer().getUniqueId())) {
+                            WrapperPlayClientUseEntity packet = new WrapperPlayClientUseEntity(event.getPacket());
+                            int entID = packet.getTarget();
+                            if (running.containsKey(event.getPlayer().getUniqueId()) && packet.getType().equals(EntityUseAction.ATTACK)) {
                                 running.get(event.getPlayer().getUniqueId()).markAsKilled(entID);
                             }
                         }

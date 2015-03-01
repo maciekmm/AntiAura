@@ -122,9 +122,9 @@ public class AuraCheck {
       wrapper.setYaw(0.0F);
       wrapper.setPitch(-45.0F);
       WrappedDataWatcher watcher = new WrappedDataWatcher();
-      watcher.setObject(0, Byte.valueOf((byte)(plugin.getConfig().getBoolean("invisibility", false) ? Byte.valueOf((byte)32).byteValue() : 0)));
-      watcher.setObject(6, Float.valueOf(0.5F));
-      watcher.setObject(11, Byte.valueOf((byte)1));
+      watcher.setObject(0, plugin.getConfig().getBoolean("invisibility", false) ? (Byte) (byte) 0x20 : (byte) 0);
+      watcher.setObject(6, (Float) (float) 0.5);
+      watcher.setObject(11, (Byte) (byte) 1);
       wrapper.setMetadata(watcher);
       return wrapper;
     }
