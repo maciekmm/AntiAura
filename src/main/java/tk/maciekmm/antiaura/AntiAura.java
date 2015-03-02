@@ -19,52 +19,40 @@
 package tk.maciekmm.antiaura;
 
 import com.comphenix.packetwrapper.WrapperPlayClientUseEntity;
+import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
-import com.google.common.collect.ImmutableList;
+import com.comphenix.protocol.wrappers.EnumWrappers.EntityUseAction;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
 
 public class AntiAura extends JavaPlugin implements Listener {
     private HashMap<UUID, AuraCheck> running = new HashMap<>();
-    public static ImmutableList<Vector> POSITIONS;
     private boolean isRegistered;
     public static final Random RANDOM = new Random();
 
     public void onEnable() {
         this.saveDefaultConfig();
-        POSITIONS = getPositionsForAmount(this.getConfig().getInt("amountOfFakePlayers"));
         this.getServer().getPluginManager().registerEvents(this, this);
-    }
-
-    public ImmutableList<Vector> getPositionsForAmount(int total) {
-        ImmutableList.Builder<Vector> pos_temp = new ImmutableList.Builder<>();
-        double per90deg = total / 4;
-        double result = per90deg / (per90deg + 1);
-        double currentX = 0;
-        double currentY = 1;
-        for (int i = 0; i <= per90deg; i++) {
-            currentX += result;
-            currentY -= result;
-            pos_temp.add(new Vector(currentX,(double)0,currentY));
-        }
-        return pos_temp.build();
     }
 
     public void register() {
@@ -73,8 +61,9 @@ public class AntiAura extends JavaPlugin implements Listener {
                     @Override
                     public void onPacketReceiving(PacketEvent event) {
                         if (event.getPacketType() == WrapperPlayClientUseEntity.TYPE) {
-                            int entID = new WrapperPlayClientUseEntity(event.getPacket()).getTargetID();
-                            if (running.containsKey(event.getPlayer().getUniqueId())) {
+                            WrapperPlayClientUseEntity packet = new WrapperPlayClientUseEntity(event.getPacket());
+                            int entID = packet.getTarget();
+                            if (running.containsKey(event.getPlayer().getUniqueId()) && packet.getType().equals(EntityUseAction.ATTACK)) {
                                 running.get(event.getPlayer().getUniqueId()).markAsKilled(entID);
                             }
                         }
@@ -105,10 +94,39 @@ public class AntiAura extends JavaPlugin implements Listener {
         if (args.length < 1) {
             return false;
         }
+        if(args[0].equalsIgnoreCase("reload")) {
+            this.reloadConfig();
+            sender.sendMessage(ChatColor.GREEN + "AntiAura config successfully reloaded");
+            return true;
+        }
 
-        Player player = Bukkit.getPlayer(args[0]);
+        @SuppressWarnings("deprecation")
+        List<Player> playerList = Bukkit.matchPlayer(args[0]);
+        Player player = null;
+        if(playerList.size() == 0) {
+            sender.sendMessage(ChatColor.RED + "Player is not online.");
+            return true;
+        } else if(playerList.size() == 1) {
+            player = playerList.get(0);
+        } else {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("[\"\",{\"text\":\"What player do you mean? (click one)\\n\",\"color\":\"green\"},");
+            for(Player p : playerList) {
+                stringBuilder.append("{\"text\":\"" + p.getName() + ", \",\"color\":\"blue\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/auracheck " + p.getName() + "\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"" + p.getName() + "\",\"color\":\"dark_purple\"}]}}},");
+            }
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            stringBuilder.append("]");
+            String json = stringBuilder.toString();
+            PacketContainer packet = new PacketContainer(PacketType.Play.Server.CHAT);
+            packet.getChatComponents().write(0, WrappedChatComponent.fromJson(json));
+            try {
+                ProtocolLibrary.getProtocolManager().sendServerPacket((Player)sender, packet);
+            } catch (InvocationTargetException e) {
+            }
+            return true;
+        }
         if (player == null) {
-            sender.sendMessage("Player is not online.");
+            sender.sendMessage(ChatColor.RED + "Player is not online.");
             return true;
         }
 
