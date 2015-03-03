@@ -59,11 +59,11 @@ public class AuraCheck {
         this.started = System.currentTimeMillis();
         
         int numPlayers = plugin.getConfig().getInt("amountOfFakePlayers");
-        for (int i = 0; i <= numPlayers ; i++) {
-            int degrees = 360 / numPlayers * i;
+        for (int i = 1; i <= numPlayers; i++) {
+            int degrees = 360 / (numPlayers - 1) * i;
             double radians = Math.toRadians(degrees);
             WrapperPlayServerNamedEntitySpawn spawnWrapper;
-            if(i == 0) {
+            if(i == 1) {
                 spawnWrapper = getSpawnWrapper(this.checked.getLocation().add(0, 2, 0).toVector(), plugin);
             } else {
                 spawnWrapper = getSpawnWrapper(this.checked.getLocation().add(2 * Math.cos(radians) ,0.2, 2 * Math.sin(radians)).toVector(), plugin);
