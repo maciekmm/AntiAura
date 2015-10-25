@@ -46,6 +46,16 @@ import java.util.UUID;
 
 
 public class AntiAura extends JavaPlugin implements Listener {
+    
+    private static final NumberFormat NUMBER_FORMAT;
+
+    static {
+        NUMBER_FORMAT = NumberFormat.getInstance();
+		NUMBER_FORMAT.setMaximumIntegerDigits(Integer.MAX_VALUE);
+		NUMBER_FORMAT.setMinimumIntegerDigits(1);
+		NUMBER_FORMAT.setMaximumFractionDigits(2);
+		NUMBER_FORMAT.setMinimumFractionDigits(1);
+    }
     private HashMap<UUID, AuraCheck> running = new HashMap<>();
     private boolean isRegistered;
     public static final Random RANDOM = new Random();
@@ -144,8 +154,8 @@ public class AntiAura extends JavaPlugin implements Listener {
                     return;
                 }
                 invoker.sendMessage(ChatColor.DARK_PURPLE + "Aura check result: killed " + result.getKey() + " out of " + result.getValue());
-                double timeTaken = finished != Long.MAX_VALUE ? (int) ((finished - started) / 1000) : ((double) getConfig().getInt("ticksToKill", 10) / 20);
-                invoker.sendMessage(ChatColor.DARK_PURPLE + "Check length: " + timeTaken + " seconds.");
+                double timeTaken = finished != Long.MAX_VALUE ? ((double) (finished - started)) / 1000D : ((double) getConfig().getInt("ticksToKill", 10)) / 20D;
+                invoker.sendMessage(ChatColor.DARK_PURPLE + "Check length: " + NUMBER_FORMAT.format(timeTaken) + " seconds.");
             }
         });
         return true;
