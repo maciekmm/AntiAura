@@ -46,16 +46,17 @@ import java.util.UUID;
 
 
 public class AntiAura extends JavaPlugin implements Listener {
-    
+
     private static final NumberFormat NUMBER_FORMAT;
 
     static {
         NUMBER_FORMAT = NumberFormat.getInstance();
-		NUMBER_FORMAT.setMaximumIntegerDigits(Integer.MAX_VALUE);
-		NUMBER_FORMAT.setMinimumIntegerDigits(1);
-		NUMBER_FORMAT.setMaximumFractionDigits(2);
-		NUMBER_FORMAT.setMinimumFractionDigits(1);
+        NUMBER_FORMAT.setMaximumIntegerDigits(Integer.MAX_VALUE);
+        NUMBER_FORMAT.setMinimumIntegerDigits(1);
+        NUMBER_FORMAT.setMaximumFractionDigits(2);
+        NUMBER_FORMAT.setMinimumFractionDigits(1);
     }
+
     private HashMap<UUID, AuraCheck> running = new HashMap<>();
     private boolean isRegistered;
     public static final Random RANDOM = new Random();
