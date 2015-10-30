@@ -62,6 +62,7 @@ public class AntiAura extends JavaPlugin implements Listener {
     private boolean isRegistered;
     public static final Random RANDOM = new Random();
 
+    @Override
     public void onEnable() {
         this.saveDefaultConfig();
         this.getServer().getPluginManager().registerEvents(this, this);
@@ -75,7 +76,7 @@ public class AntiAura extends JavaPlugin implements Listener {
                         if (event.getPacketType() == WrapperPlayClientUseEntity.TYPE) {
                             WrapperPlayClientUseEntity packet = new WrapperPlayClientUseEntity(event.getPacket());
                             int entID = packet.getTarget();
-                            if (running.containsKey(event.getPlayer().getUniqueId()) && packet.getType().equals(EntityUseAction.ATTACK)) {
+                            if (running.containsKey(event.getPlayer().getUniqueId()) && packet.getType() == EntityUseAction.ATTACK) {
                                 running.get(event.getPlayer().getUniqueId()).markAsKilled(entID);
                             }
                         }
@@ -102,11 +103,12 @@ public class AntiAura extends JavaPlugin implements Listener {
         return null;
     }
 
+    @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
             return false;
         }
-        if(args[0].equalsIgnoreCase("reload")) {
+        if (args[0].equalsIgnoreCase("reload")) {
             this.reloadConfig();
             sender.sendMessage(ChatColor.GREEN + "AntiAura config successfully reloaded");
             return true;
@@ -114,17 +116,17 @@ public class AntiAura extends JavaPlugin implements Listener {
 
         @SuppressWarnings("deprecation")
         List<Player> playerList = Bukkit.matchPlayer(args[0]);
-        Player player = null;
-        if(playerList.size() == 0) {
+        Player player;
+        if (playerList.isEmpty()) {
             sender.sendMessage(ChatColor.RED + "Player is not online.");
             return true;
-        } else if(playerList.size() == 1) {
+        } else if (playerList.size() == 1) {
             player = playerList.get(0);
         } else {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("[\"\",{\"text\":\"What player do you mean? (click one)\\n\",\"color\":\"green\"},");
-            for(Player p : playerList) {
-                stringBuilder.append("{\"text\":\"" + p.getName() + ", \",\"color\":\"blue\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/auracheck " + p.getName() + "\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"" + p.getName() + "\",\"color\":\"dark_purple\"}]}}},");
+            for (Player p : playerList) {
+                stringBuilder.append("{\"text\":\"").append(p.getName()).append(", \",\"color\":\"blue\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/auracheck ").append(p.getName()).append("\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"").append(p.getName()).append("\",\"color\":\"dark_purple\"}]}}},");
             }
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             stringBuilder.append("]");
@@ -132,7 +134,7 @@ public class AntiAura extends JavaPlugin implements Listener {
             PacketContainer packet = new PacketContainer(PacketType.Play.Server.CHAT);
             packet.getChatComponents().write(0, WrappedChatComponent.fromJson(json));
             try {
-                ProtocolLibrary.getProtocolManager().sendServerPacket((Player)sender, packet);
+                ProtocolLibrary.getProtocolManager().sendServerPacket((Player) sender, packet);
             } catch (InvocationTargetException e) {
             }
             return true;

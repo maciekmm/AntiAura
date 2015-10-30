@@ -42,7 +42,7 @@ import java.util.UUID;
 
 public class AuraCheck {
     private final AntiAura plugin;
-    private HashMap<Integer, Boolean> entitiesSpawned = new HashMap<>();
+    private Map<Integer, Boolean> entitiesSpawned = new HashMap<>();
     private CommandSender invoker;
     private Player checked;
     private long started;
@@ -54,37 +54,37 @@ public class AuraCheck {
         this.checked = checked;
     }
 
-    public void invoke(CommandSender player,final Callback callback) {
+    public void invoke(CommandSender player, final Callback callback) {
         this.invoker = player;
         this.started = System.currentTimeMillis();
-        
+
         int numPlayers = plugin.getConfig().getInt("amountOfFakePlayers");
         for (int i = 1; i <= numPlayers; i++) {
             int degrees = 360 / (numPlayers - 1) * i;
             double radians = Math.toRadians(degrees);
             WrapperPlayServerNamedEntitySpawn spawnWrapper;
-            if(i == 1) {
+            if (i == 1) {
                 spawnWrapper = getSpawnWrapper(this.checked.getLocation().add(0, 2, 0).toVector(), plugin);
             } else {
-                spawnWrapper = getSpawnWrapper(this.checked.getLocation().add(2 * Math.cos(radians) ,0.2, 2 * Math.sin(radians)).toVector(), plugin);
+                spawnWrapper = getSpawnWrapper(this.checked.getLocation().add(2 * Math.cos(radians), 0.2, 2 * Math.sin(radians)).toVector(), plugin);
             }
-            WrapperPlayServerPlayerInfo infoWrapper = getInfoWrapper(spawnWrapper.getPlayerUuid(), PlayerInfoAction.ADD_PLAYER); 
+            WrapperPlayServerPlayerInfo infoWrapper = getInfoWrapper(spawnWrapper.getPlayerUuid(), PlayerInfoAction.ADD_PLAYER);
             infoWrapper.sendPacket(this.checked);
             spawnWrapper.sendPacket(this.checked);
             entitiesSpawned.put(spawnWrapper.getEntityId(), false);
             WrapperPlayServerPlayerInfo RemoveinfoWrapper = getInfoWrapper(spawnWrapper.getPlayerUuid(), PlayerInfoAction.REMOVE_PLAYER);
             RemoveinfoWrapper.sendPacket(this.checked);
         }
-        
+
 
         Bukkit.getScheduler().runTaskLater(this.plugin, new Runnable() {
             @Override
             public void run() {
                 AbstractMap.SimpleEntry<Integer, Integer> result = end();
                 plugin.remove(checked.getUniqueId());
-                callback.done(started,finished,result,invoker,checked);
+                callback.done(started, finished, result, invoker, checked);
             }
-        }, plugin.getConfig().getInt("ticksToKill",10));
+        }, plugin.getConfig().getInt("ticksToKill", 10));
     }
 
     public void markAsKilled(Integer val) {
@@ -115,30 +115,30 @@ public class AuraCheck {
     }
 
     public static WrapperPlayServerNamedEntitySpawn getSpawnWrapper(Vector loc, AntiAura plugin) {
-      WrapperPlayServerNamedEntitySpawn wrapper = new WrapperPlayServerNamedEntitySpawn();
-      wrapper.setEntityId(AntiAura.RANDOM.nextInt(20000));
-      wrapper.setPosition(loc);
-      wrapper.setPlayerUuid(UUID.randomUUID());
-      wrapper.setYaw(0.0F);
-      wrapper.setPitch(-45.0F);
-      WrappedDataWatcher watcher = new WrappedDataWatcher();
-      watcher.setObject(0, plugin.getConfig().getBoolean("invisibility", false) ? (Byte) (byte) 0x20 : (byte) 0);
-      watcher.setObject(6, (Float) (float) 0.5);
-      watcher.setObject(11, (Byte) (byte) 1);
-      wrapper.setMetadata(watcher);
-      return wrapper;
+        WrapperPlayServerNamedEntitySpawn wrapper = new WrapperPlayServerNamedEntitySpawn();
+        wrapper.setEntityId(AntiAura.RANDOM.nextInt(20000));
+        wrapper.setPosition(loc);
+        wrapper.setPlayerUuid(UUID.randomUUID());
+        wrapper.setYaw(0.0F);
+        wrapper.setPitch(-45.0F);
+        WrappedDataWatcher watcher = new WrappedDataWatcher();
+        watcher.setObject(0, plugin.getConfig().getBoolean("invisibility", false) ? (byte) 0x20 : (byte) 0);
+        watcher.setObject(6, 0.5F);
+        watcher.setObject(11, (byte) 1);
+        wrapper.setMetadata(watcher);
+        return wrapper;
     }
-    
-    
+
+
     public static WrapperPlayServerPlayerInfo getInfoWrapper(UUID playeruuid, PlayerInfoAction action) {
-      WrapperPlayServerPlayerInfo wrapper = new WrapperPlayServerPlayerInfo();
-      wrapper.setAction(action);
-      WrappedGameProfile profile = new WrappedGameProfile(playeruuid, NameGenerator.newName());
-      PlayerInfoData data = new PlayerInfoData(profile, 1, NativeGameMode.SURVIVAL, WrappedChatComponent.fromText(NameGenerator.newName()));
-      List<PlayerInfoData> listdata = new ArrayList<PlayerInfoData>();
-      listdata.add(data);
-      wrapper.setData(listdata);
-      return wrapper;
+        WrapperPlayServerPlayerInfo wrapper = new WrapperPlayServerPlayerInfo();
+        wrapper.setAction(action);
+        WrappedGameProfile profile = new WrappedGameProfile(playeruuid, NameGenerator.newName());
+        PlayerInfoData data = new PlayerInfoData(profile, 1, NativeGameMode.SURVIVAL, WrappedChatComponent.fromText(NameGenerator.newName()));
+        List<PlayerInfoData> listdata = new ArrayList<>();
+        listdata.add(data);
+        wrapper.setData(listdata);
+        return wrapper;
     }
 
     public static WrapperPlayServerEntityDestroy kill(int entity) {

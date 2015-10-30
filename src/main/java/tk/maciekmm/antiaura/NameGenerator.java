@@ -23,7 +23,7 @@ public class NameGenerator {
     }
 
     private static String getRandomLetter() {
-        return ((Alphabet) letters.get(rand.nextInt(letters.size()))).name();
+        return letters.get(rand.nextInt(letters.size())).name();
     }
 
     private static enum Alphabet {
