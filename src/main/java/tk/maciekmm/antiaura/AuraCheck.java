@@ -82,7 +82,7 @@ public class AuraCheck {
             public void run() {
                 AbstractMap.SimpleEntry<Integer, Integer> result = end();
                 plugin.remove(checked.getUniqueId());
-                callback.done(started,finished,result,invoker);
+                callback.done(started,finished,result,invoker,checked);
             }
         }, plugin.getConfig().getInt("ticksToKill",10));
     }
@@ -148,7 +148,7 @@ public class AuraCheck {
     }
 
     public interface Callback {
-        public void done(long started, long finished, AbstractMap.SimpleEntry<Integer, Integer> result, CommandSender invoker);
+        public void done(long started, long finished, AbstractMap.SimpleEntry<Integer, Integer> result, CommandSender invoker, Player target);
     }
 
 }

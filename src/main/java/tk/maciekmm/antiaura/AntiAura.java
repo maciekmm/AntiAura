@@ -150,11 +150,11 @@ public class AntiAura extends JavaPlugin implements Listener {
 
         check.invoke(sender, new AuraCheck.Callback() {
             @Override
-            public void done(long started, long finished, AbstractMap.SimpleEntry<Integer, Integer> result, CommandSender invoker) {
+            public void done(long started, long finished, AbstractMap.SimpleEntry<Integer, Integer> result, CommandSender invoker, Player target) {
                 if (invoker instanceof Player && !((Player) invoker).isOnline()) {
                     return;
                 }
-                invoker.sendMessage(ChatColor.DARK_PURPLE + "Aura check result: killed " + result.getKey() + " out of " + result.getValue());
+                invoker.sendMessage(ChatColor.DARK_PURPLE + "Aura check result for " + target.getName() + ": killed " + result.getKey() + " out of " + result.getValue());
                 double timeTaken = finished != Long.MAX_VALUE ? ((double) (finished - started)) / 1000D : ((double) getConfig().getInt("ticksToKill", 10)) / 20D;
                 invoker.sendMessage(ChatColor.DARK_PURPLE + "Check length: " + NUMBER_FORMAT.format(timeTaken) + " seconds.");
             }
