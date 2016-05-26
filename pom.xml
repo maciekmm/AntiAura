@@ -2,39 +2,39 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>antiaura</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
     <groupId>tk.maciekmm</groupId>
     <name>AntiAura</name>
     <description>Simple aura hack checker.</description>
     <url>http://maciekmm.net</url>
     <packaging>jar</packaging>
-
     <properties>
         <main.class>tk.maciekmm.antiaura.AntiAura</main.class>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
     </properties>
-
     <repositories>
         <repository>
             <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
         <repository>
-            <id>shadowvolt-repo</id>
-            <url>http://ci.shadowvolt.com/plugin/repository/everything/</url>
+            <id>dmulloy2-repo</id>
+            <url>http://repo.dmulloy2.net/content/groups/public/</url>
         </repository>
     </repositories>
-
     <dependencies>
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>1.8-R0.1-SNAPSHOT</version>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.9-R0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
-            <artifactId>ProtocolLib</artifactId>
-            <version>3.6.3-SNAPSHOT</version>
-        </dependency>
+            <artifactId>ProtocolLib-API</artifactId>
+            <version>4.0</version>
+		</dependency>
     </dependencies>
 
     <build>
