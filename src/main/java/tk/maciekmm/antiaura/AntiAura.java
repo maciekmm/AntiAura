@@ -26,7 +26,13 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.EnumWrappers.EntityUseAction;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
-
+import java.lang.reflect.InvocationTargetException;
+import java.text.NumberFormat;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -36,14 +42,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.lang.reflect.InvocationTargetException;
-import java.text.NumberFormat;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
 
 
 public class AntiAura extends JavaPlugin implements Listener {
@@ -75,7 +73,7 @@ public class AntiAura extends JavaPlugin implements Listener {
                     public void onPacketReceiving(PacketEvent event) {
                         if (event.getPacketType() == WrapperPlayClientUseEntity.TYPE) {
                             WrapperPlayClientUseEntity packet = new WrapperPlayClientUseEntity(event.getPacket());
-                            int entID = packet.getTarget();
+                            int entID = packet.getTargetID();
                             if (running.containsKey(event.getPlayer().getUniqueId()) && packet.getType() == EntityUseAction.ATTACK) {
                                 running.get(event.getPlayer().getUniqueId()).markAsKilled(entID);
                             }

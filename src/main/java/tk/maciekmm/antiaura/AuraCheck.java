@@ -25,19 +25,19 @@ import com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher.Registry;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher.WrappedDataWatcherObject;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
-
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
-
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 
 public class AuraCheck {
@@ -68,11 +68,11 @@ public class AuraCheck {
             } else {
                 spawnWrapper = getSpawnWrapper(this.checked.getLocation().add(2 * Math.cos(radians), 0.2, 2 * Math.sin(radians)).toVector(), plugin);
             }
-            WrapperPlayServerPlayerInfo infoWrapper = getInfoWrapper(spawnWrapper.getPlayerUuid(), PlayerInfoAction.ADD_PLAYER);
+            WrapperPlayServerPlayerInfo infoWrapper = getInfoWrapper(spawnWrapper.getPlayerUUID(), PlayerInfoAction.ADD_PLAYER);
             infoWrapper.sendPacket(this.checked);
             spawnWrapper.sendPacket(this.checked);
-            entitiesSpawned.put(spawnWrapper.getEntityId(), false);
-            WrapperPlayServerPlayerInfo RemoveinfoWrapper = getInfoWrapper(spawnWrapper.getPlayerUuid(), PlayerInfoAction.REMOVE_PLAYER);
+            entitiesSpawned.put(spawnWrapper.getEntityID(), false);
+            WrapperPlayServerPlayerInfo RemoveinfoWrapper = getInfoWrapper(spawnWrapper.getPlayerUUID(), PlayerInfoAction.REMOVE_PLAYER);
             RemoveinfoWrapper.sendPacket(this.checked);
         }
 
@@ -116,15 +116,15 @@ public class AuraCheck {
 
     public static WrapperPlayServerNamedEntitySpawn getSpawnWrapper(Vector loc, AntiAura plugin) {
         WrapperPlayServerNamedEntitySpawn wrapper = new WrapperPlayServerNamedEntitySpawn();
-        wrapper.setEntityId(AntiAura.RANDOM.nextInt(20000));
+        wrapper.setEntityID(AntiAura.RANDOM.nextInt(20000));
         wrapper.setPosition(loc);
-        wrapper.setPlayerUuid(UUID.randomUUID());
+        wrapper.setPlayerUUID(UUID.randomUUID());
         wrapper.setYaw(0.0F);
         wrapper.setPitch(-45.0F);
         WrappedDataWatcher watcher = new WrappedDataWatcher();
-        watcher.setObject(0, plugin.getConfig().getBoolean("invisibility", false) ? (byte) 0x20 : (byte) 0);
-        watcher.setObject(6, 0.5F);
-        watcher.setObject(11, (byte) 1);
+        watcher.setObject(new WrappedDataWatcherObject(0, Registry.get(Byte.class)), plugin.getConfig().getBoolean("invisibility", false) ? (byte) 0x20 : (byte) 0);
+        watcher.setObject(new WrappedDataWatcherObject(6, Registry.get(Float.class)), 0.5F);
+        watcher.setObject(new WrappedDataWatcherObject(11, Registry.get(Byte.class)), (byte) 1);
         wrapper.setMetadata(watcher);
         return wrapper;
     }

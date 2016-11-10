@@ -1,8 +1,7 @@
 package tk.maciekmm.antiaura;
 
-import org.apache.commons.lang.RandomStringUtils;
-
 import java.util.Random;
+import org.apache.commons.lang.RandomStringUtils;
 
 public class NameGenerator {
     private static Random random = new Random();
